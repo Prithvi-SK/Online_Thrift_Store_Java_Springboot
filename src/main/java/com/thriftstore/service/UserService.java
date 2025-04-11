@@ -32,4 +32,12 @@ public class UserService implements AuthService {
         }
         return null;
     }
+
+    public void updateUser(User user) {
+        // Only update username and password, keep email unchanged
+        User existingUser = userRepository.findById(user.getId()).orElseThrow(() -> new RuntimeException("User not found"));
+        existingUser.setUsername(user.getUsername());
+        existingUser.setPassword(user.getPassword()); // Should be hashed in production
+        userRepository.save(existingUser);
+    }
 }
