@@ -41,8 +41,11 @@
                 <td th:text="${item.description}"></td>
                 <td th:text="${item.category}"></td>
                 <td>
-                    <input type="number" id="cartQuantity_${item.id}" name="cartQuantity" min="1" th:max="${item.stock}" value="1" required>
-                    <button th:onclick="addToCart(${item.id}, ${item.stock})">Add to Cart</button>
+                    <form th:action="@{/cart/add}" method="post">
+                        <input type="hidden" th:value="${item.id}" name="itemId">
+                        <input type="number" id="cartQuantity_${item.id}" name="quantity" min="1" th:max="${item.stock}" value="1" required>
+                        <button type="submit">Add to Cart</button>
+                    </form>
                 </td>
             </tr>
             <tr th:if="${inventoryList.isEmpty()}">
@@ -50,24 +53,5 @@
             </tr>
         </tbody>
     </table>
-
-    <script>
-        function addToCart(itemId, maxStock) {
-            var quantity = document.getElementById('cartQuantity_' + itemId).value;
-            if (quantity > maxStock) {
-                alert("Cannot add more than available stock (" + maxStock + ")!");
-                return;
-            }
-            if (quantity <= 0) {
-                alert("Quantity must be at least 1!");
-                return;
-            }
-            // Simulate adding to cart (will be handled by controller in Case 3)
-            fetch('/cart/add?itemId=' + itemId + '&quantity=' + quantity, { method: 'POST' })
-                .then(response => response.text())
-                .then(data => alert(data))
-                .catch(error => alert("Error adding to cart: " + error));
-        }
-    </script>
 </body>
 </html>

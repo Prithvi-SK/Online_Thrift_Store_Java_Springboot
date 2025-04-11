@@ -1,12 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Return</title>
-    </head>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Return Items</title>
+    <style>
+        nav { background-color: #333; overflow: hidden; }
+        nav a { color: white; padding: 14px 16px; text-decoration: none; display: inline-block; }
+        nav a:hover { background-color: #ddd; color: black; }
+    </style>
+</head>
 <body>
+    <nav>
+        <a th:href="@{/dashboard}">Dashboard</a>
+        <a th:href="@{/cart}">Cart</a>
+        <!-- Add other links as per your dashboard navigation -->
+    </nav>
     <h1>Return Items</h1>
-    <p>To be implemented in Case 3.</p>
-    <a href="/dashboard">Back to Dashboard</a>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Stock</th>
+                <th>Rent Price</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${lastCheckout}">
+                <td th:text="${item.inventory.name}"></td>
+                <td th:text="${item.inventory.stock}"></td>
+                <td th:text="${item.inventory.rentPrice}"></td>
+                <td th:text="${item.inventory.description}"></td>
+                <td th:text="${item.inventory.category}"></td>
+                <td th:text="${item.quantity}"></td>
+            </tr>
+            <tr th:if="${lastCheckout == null or lastCheckout.isEmpty()}">
+                <td colspan="6">No items to return.</td>
+            </tr>
+        </tbody>
+    </table>
+    <form th:action="@{/return/confirm}" method="post">
+        <button type="submit">Return Items</button>
+    </form>
 </body>
 </html>
