@@ -10,8 +10,8 @@
         <input type="hidden" name="id" th:value="${item.id}">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" th:value="${item.name}" required><br><br>
-        <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" name="quantity" th:value="${item.quantity}" required><br><br>
+        <label for="stock">Stock:</label> <!-- Renamed from Quantity -->
+        <input type="number" id="stock" name="stock" th:value="${item.stock}" required><br><br> <!-- Renamed from quantity -->
         <label for="rentPrice">Rent Price:</label>
         <input type="number" step="0.01" id="rentPrice" name="rentPrice" th:value="${item.rentPrice}" required><br><br>
         <label for="description">Description:</label>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>Cart</title></head>
+<body>
+    <h1>Cart</h1>
+    <table border="1">
+        <thead><tr><th>Item ID</th><th>Quantity</th></tr></thead>
+        <tbody>
+            <tr th:each="item : ${cart}">
+                <td th:text="${item.itemId}"></td>
+                <td th:text="${item.quantity}"></td>
+            </tr>
+            <tr th:if="${cart.isEmpty()}"><td colspan="2">Cart is empty.</td></tr>
+        </tbody>
+    </table>
+    <a href="/dashboard">Back to Dashboard</a>
+</body>
+</html>

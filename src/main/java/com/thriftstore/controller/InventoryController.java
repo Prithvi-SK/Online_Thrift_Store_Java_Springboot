@@ -2,7 +2,7 @@ package com.thriftstore.controller;
 
 import com.thriftstore.entity.Inventory;
 import com.thriftstore.entity.User;
-import com.thriftstore.entity.Category; // New import
+import com.thriftstore.entity.Category; // Import for the Category enum
 import com.thriftstore.repository.InventoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -49,7 +49,7 @@ public class InventoryController {
     public String updateItem(
             @RequestParam Long id,
             @RequestParam String name,
-            @RequestParam int quantity,
+            @RequestParam int stock, // Updated from quantity to stock
             @RequestParam double rentPrice,
             @RequestParam String description,
             @RequestParam String category,
@@ -61,7 +61,7 @@ public class InventoryController {
         Inventory item = inventoryRepository.findById(id).orElse(null);
         if (item != null) {
             item.setName(name);
-            item.setQuantity(quantity);
+            item.setStock(stock); // Updated from setQuantity to setStock
             item.setRentPrice(rentPrice);
             item.setDescription(description);
             item.setCategory(Category.valueOf(category.toUpperCase()));
@@ -82,7 +82,7 @@ public class InventoryController {
     @PostMapping("/addItem")
     public String addItem(
             @RequestParam String name,
-            @RequestParam int quantity,
+            @RequestParam int stock, // Updated from quantity to stock
             @RequestParam double rentPrice,
             @RequestParam String description,
             @RequestParam String category,
@@ -93,7 +93,7 @@ public class InventoryController {
         }
         Inventory newItem = new Inventory();
         newItem.setName(name);
-        newItem.setQuantity(quantity);
+        newItem.setStock(stock); // Updated from setQuantity to setStock
         newItem.setRentPrice(rentPrice);
         newItem.setDescription(description);
         newItem.setCategory(Category.valueOf(category.toUpperCase()));

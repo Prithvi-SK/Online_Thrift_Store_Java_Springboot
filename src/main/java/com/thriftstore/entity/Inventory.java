@@ -10,7 +10,7 @@ import jakarta.persistence.Enumerated;
 public class Inventory extends BaseEntity {
 
     private String name;
-    private int quantity;
+    private int stock; // Renamed from quantity
     private double rentPrice;
     private String description;
 
@@ -23,8 +23,8 @@ public class Inventory extends BaseEntity {
     // Getters and Setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
-    public int getQuantity() { return quantity; }
-    public void setQuantity(int quantity) { this.quantity = quantity; }
+    public int getStock() { return stock; } // Updated getter
+    public void setStock(int stock) { this.stock = stock; } // Updated setter
     public double getRentPrice() { return rentPrice; }
     public void setRentPrice(double rentPrice) { this.rentPrice = rentPrice; }
     public String getDescription() { return description; }

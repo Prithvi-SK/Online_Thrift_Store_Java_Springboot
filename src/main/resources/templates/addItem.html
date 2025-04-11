@@ -9,8 +9,8 @@
     <form th:action="@{/addItem}" method="post">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" required><br><br>
-        <label for="quantity">Quantity:</label>
-        <input type="number" id="quantity" name="quantity" required><br><br>
+        <label for="stock">Stock:</label> <!-- Renamed from Quantity -->
+        <input type="number" id="stock" name="stock" required><br><br> <!-- Renamed from quantity -->
         <label for="rentPrice">Rent Price:</label>
         <input type="number" step="0.01" id="rentPrice" name="rentPrice" required><br><br>
         <label for="description">Description:</label>

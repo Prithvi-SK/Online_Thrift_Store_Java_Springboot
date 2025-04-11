@@ -1,10 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Dashboard</title>
+    <style>
+        .navbar { overflow: hidden; background-color: #333; }
+        .navbar a { float: left; display: block; color: white; text-align: center; padding: 14px 16px; text-decoration: none; }
+        .navbar a:hover { background-color: #ddd; color: black; }
+        .navbar select { float: left; padding: 14px; margin-right: 16px; }
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Dashboard</h1>
+    <div class="navbar">
+        <select th:name="category" onchange="window.location.href='/dashboard?category=' + this.value">
+            <option value="" th:selected="${selectedCategory == null}">All Categories</option>
+            <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}" th:selected="${selectedCategory == cat.toString()}"></option>
+        </select>
+        <a href="/cart">Cart</a>
+        <a href="/return">Return</a>
+        <a href="/profile">Profile</a>
+    </div>
+
+    <h1>Available Items</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Stock</th>
+                <th>Rent Price</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Add to Cart</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="item : ${inventoryList}">
+                <td th:text="${item.name}"></td>
+                <td th:text="${item.stock}"></td>
+                <td th:text="${item.rentPrice}"></td>
+                <td th:text="${item.description}"></td>
+                <td th:text="${item.category}"></td>
+                <td>
+                    <input type="number" id="cartQuantity_${item.id}" name="cartQuantity" min="1" th:max="${item.stock}" value="1" required>
+                    <button th:onclick="addToCart(${item.id}, ${item.stock})">Add to Cart</button>
+                </td>
+            </tr>
+            <tr th:if="${inventoryList.isEmpty()}">
+                <td colspan="6">No items available.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <script>
+        function addToCart(itemId, maxStock) {
+            var quantity = document.getElementById('cartQuantity_' + itemId).value;
+            if (quantity > maxStock) {
+                alert("Cannot add more than available stock (" + maxStock + ")!");
+                return;
+            }
+            if (quantity <= 0) {
+                alert("Quantity must be at least 1!");
+                return;
+            }
+            // Simulate adding to cart (will be handled by controller in Case 3)
+            fetch('/cart/add?itemId=' + itemId + '&quantity=' + quantity, { method: 'POST' })
+                .then(response => response.text())
+                .then(data => alert(data))
+                .catch(error => alert("Error adding to cart: " + error));
+        }
+    </script>
 </body>
 </html>

@@ -10,27 +10,27 @@
         <thead>
             <tr>
                 <th>Name</th>
-                <th>Quantity</th>
+                <th>Stock</th> <!-- Renamed from Quantity -->
                 <th>Rent Price</th>
                 <th>Description</th>
-                <th>Category</th> <!-- New column -->
+                <th>Category</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="item : ${inventoryList}">
                 <td th:text="${item.name}"></td>
-                <td th:text="${item.quantity}"></td>
+                <td th:text="${item.stock}"></td> <!-- Renamed from quantity -->
                 <td th:text="${item.rentPrice}"></td>
                 <td th:text="${item.description}"></td>
-                <td th:text="${item.category}"></td> <!-- New column -->
+                <td th:text="${item.category}"></td>
                 <td>
                     <a th:href="@{/editItem(id=${item.id})}">Edit</a>
                     <a th:href="@{/removeItem(id=${item.id})}" onclick="return confirm('Are you sure you want to remove this item?');">Remove</a>
                 </td>
             </tr>
             <tr th:if="${inventoryList.isEmpty()}">
-                <td colspan="6">No items in inventory yet.</td> <!-- Updated colspan to 6 -->
+                <td colspan="6">No items in inventory yet.</td>
             </tr>
         </tbody>
     </table>
