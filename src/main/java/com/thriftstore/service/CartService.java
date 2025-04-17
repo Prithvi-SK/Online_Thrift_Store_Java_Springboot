@@ -2,36 +2,36 @@ package com.thriftstore.service;
 
 import com.thriftstore.entity.CartItem;
 import com.thriftstore.entity.Inventory;
+import com.thriftstore.entity.ReturnItem;
 import com.thriftstore.entity.User;
 import com.thriftstore.entity.CartDisplayItem;
+import com.thriftstore.repository.CartItemRepository;
 import com.thriftstore.repository.InventoryRepository;
+import com.thriftstore.repository.ReturnItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpSession;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+import java.util.stream.Collectors; // Added missing import
 
 @Service
 public class CartService {
 
-    private static final String CART_SESSION_ATTRIBUTE = "cart_%s";
-    private static final String LAST_CHECKOUT_ATTRIBUTE = "lastCheckout";
+    @Autowired
+    private CartItemRepository cartItemRepository;
+    @Autowired
+    private ReturnItemRepository returnItemRepository;
     @Autowired
     private InventoryRepository inventoryRepository;
 
     public List<CartDisplayItem> getCartWithDetails(HttpSession session) {
         User user = (User) session.getAttribute("user");
-        if (user == null || user.getEmail() == null) return new ArrayList<>();
-        String cartKey = String.format(CART_SESSION_ATTRIBUTE, user.getEmail());
-        @SuppressWarnings("unchecked")
-        List<CartItem> cart = (List<CartItem>) session.getAttribute(cartKey);
-        if (cart == null) {
-            cart = new ArrayList<>();
-            session.setAttribute(cartKey, cart);
-        }
-        return cart.stream()
+        if (user == null) return new ArrayList<>();
+        List<CartItem> cartItems = cartItemRepository.findByUser(user);
+        return cartItems.stream()
                 .map(item -> {
                     Inventory inventory = inventoryRepository.findById(item.getItemId()).orElse(null);
                     if (inventory != null) {
@@ -48,60 +48,65 @@ public class CartService {
 
     public void addToCart(HttpSession session, Long itemId, int quantity) {
         User user = (User) session.getAttribute("user");
-        if (user == null || user.getEmail() == null) return;
-        List<CartItem> cart = getCart(session);
+        if (user == null) return;
         Inventory item = inventoryRepository.findById(itemId).orElse(null);
         if (item == null || quantity <= 0 || quantity > item.getStock()) return;
 
-        CartItem existingItem = cart.stream()
+        List<CartItem> cartItems = cartItemRepository.findByUser(user);
+        Optional<CartItem> existingItem = cartItems.stream()
                 .filter(cartItem -> cartItem.getItemId().equals(itemId))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
 
-        if (existingItem != null) {
-            int newQuantity = existingItem.getQuantity() + quantity;
+        if (existingItem.isPresent()) {
+            CartItem cartItem = existingItem.get();
+            int newQuantity = cartItem.getQuantity() + quantity;
             if (newQuantity <= item.getStock()) {
-                existingItem.setQuantity(newQuantity);
+                cartItem.setQuantity(newQuantity);
+                cartItemRepository.save(cartItem);
             }
         } else {
             CartItem cartItem = new CartItem();
+            cartItem.setUser(user);
             cartItem.setItemId(itemId);
             cartItem.setQuantity(quantity);
-            cartItem.setUserEmail(user.getEmail());
-            cart.add(cartItem);
+            cartItemRepository.save(cartItem);
         }
-    }
-
-    private List<CartItem> getCart(HttpSession session) {
-        User user = (User) session.getAttribute("user");
-        if (user == null || user.getEmail() == null) return new ArrayList<>();
-        String cartKey = String.format(CART_SESSION_ATTRIBUTE, user.getEmail());
-        @SuppressWarnings("unchecked")
-        List<CartItem> cart = (List<CartItem>) session.getAttribute(cartKey);
-        if (cart == null) {
-            cart = new ArrayList<>();
-            session.setAttribute(cartKey, cart);
-        }
-        return cart;
     }
 
     public void checkout(HttpSession session) {
         User user = (User) session.getAttribute("user");
-        if (user == null || user.getEmail() == null) return;
-        String cartKey = String.format(CART_SESSION_ATTRIBUTE, user.getEmail());
-        @SuppressWarnings("unchecked")
-        List<CartItem> cart = (List<CartItem>) session.getAttribute(cartKey);
-        if (cart == null || cart.isEmpty()) return;
+        if (user == null) return;
+        List<CartItem> cartItems = cartItemRepository.findByUser(user);
+        if (cartItems.isEmpty()) return;
 
-        // Get existing checkout items or initialize a new list
-        @SuppressWarnings("unchecked")
-        List<CartDisplayItem> lastCheckout = (List<CartDisplayItem>) session.getAttribute(LAST_CHECKOUT_ATTRIBUTE);
-        if (lastCheckout == null) {
-            lastCheckout = new ArrayList<>();
+        // Move items to return table
+        for (CartItem cartItem : cartItems) {
+            ReturnItem returnItem = new ReturnItem();
+            returnItem.setUser(user);
+            returnItem.setItemId(cartItem.getItemId());
+            returnItem.setQuantity(cartItem.getQuantity());
+            returnItemRepository.save(returnItem);
+
+            // Decrease inventory stock
+            Inventory inventory = inventoryRepository.findById(cartItem.getItemId()).orElse(null);
+            if (inventory != null) {
+                int newStock = inventory.getStock() - cartItem.getQuantity();
+                if (newStock >= 0) {
+                    inventory.setStock(newStock);
+                    inventoryRepository.save(inventory);
+                }
+            }
         }
 
-        // Convert current cart to checkout items
-        List<CartDisplayItem> checkoutItems = cart.stream()
+        // Remove items from cart
+        cartItemRepository.deleteAll(cartItems);
+    }
+
+    public List<CartDisplayItem> getReturnItems(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) return new ArrayList<>();
+        List<ReturnItem> returnItems = returnItemRepository.findByUser(user);
+        return returnItems.stream()
                 .map(item -> {
                     Inventory inventory = inventoryRepository.findById(item.getItemId()).orElse(null);
                     if (inventory != null) {
@@ -114,27 +119,24 @@ public class CartService {
                 })
                 .filter(item -> item != null)
                 .collect(Collectors.toList());
+    }
 
-        // Append new checkout items to the existing list
-        lastCheckout.addAll(checkoutItems);
+    public void confirmReturn(HttpSession session) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) return;
+        List<ReturnItem> returnItems = returnItemRepository.findByUser(user);
+        if (returnItems.isEmpty()) return;
 
-        // Update session with the combined list
-        session.setAttribute(LAST_CHECKOUT_ATTRIBUTE, lastCheckout);
-
-        // Decrease inventory stock for the new checkout items
-        for (CartItem item : cart) {
-            Inventory inventoryItem = inventoryRepository.findById(item.getItemId()).orElse(null);
-            if (inventoryItem != null) {
-                int newStock = inventoryItem.getStock() - item.getQuantity();
-                if (newStock >= 0) {
-                    inventoryItem.setStock(newStock);
-                    inventoryRepository.save(inventoryItem);
-                }
+        for (ReturnItem returnItem : returnItems) {
+            Inventory inventory = inventoryRepository.findById(returnItem.getItemId()).orElse(null);
+            if (inventory != null) {
+                int newStock = inventory.getStock() + returnItem.getQuantity();
+                inventory.setStock(newStock);
+                inventoryRepository.save(inventory);
             }
         }
 
-        // Clear the cart
-        session.removeAttribute(cartKey);
+        returnItemRepository.deleteAll(returnItems);
     }
 
     public void updateInventoryStock(Inventory inventory) {

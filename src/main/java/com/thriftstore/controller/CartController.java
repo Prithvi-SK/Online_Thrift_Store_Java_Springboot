@@ -1,18 +1,18 @@
 package com.thriftstore.controller;
 
-import com.thriftstore.entity.CartDisplayItem;
-import com.thriftstore.entity.Inventory;
-import com.thriftstore.service.CartService;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import jakarta.servlet.http.HttpSession;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.thriftstore.entity.CartDisplayItem;
+import com.thriftstore.service.CartService;
+
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class CartController {
@@ -25,13 +25,9 @@ public class CartController {
         if (session.getAttribute("user") == null) {
             return "redirect:/";
         }
-        try {
-            model.addAttribute("cart", cartService.getCartWithDetails(session));
-            return "cart";
-        } catch (Exception e) {
-            model.addAttribute("error", "Error loading cart: " + e.getMessage());
-            return "error";
-        }
+        List<CartDisplayItem> cart = cartService.getCartWithDetails(session);
+        model.addAttribute("cart", cart);
+        return "cart";
     }
 
     @PostMapping("/cart/add")
@@ -54,30 +50,20 @@ public class CartController {
 
     @GetMapping("/return")
     public String showReturnPage(Model model, HttpSession session) {
-        @SuppressWarnings("unchecked")
-        List<CartDisplayItem> lastCheckout = (List<CartDisplayItem>) session.getAttribute("lastCheckout");
-        if (lastCheckout == null) {
-            lastCheckout = new ArrayList<>();
+        if (session.getAttribute("user") == null) {
+            return "redirect:/";
         }
+        List<CartDisplayItem> lastCheckout = cartService.getReturnItems(session);
         model.addAttribute("lastCheckout", lastCheckout);
         return "return";
     }
 
     @PostMapping("/return/confirm")
     public String confirmReturn(HttpSession session) {
-        @SuppressWarnings("unchecked")
-        List<CartDisplayItem> lastCheckout = (List<CartDisplayItem>) session.getAttribute("lastCheckout");
-        if (lastCheckout != null && !lastCheckout.isEmpty()) {
-            for (CartDisplayItem item : lastCheckout) {
-                if (item.getInventory() != null) {
-                    Inventory inventory = item.getInventory();
-                    int newStock = inventory.getStock() + item.getQuantity();
-                    inventory.setStock(newStock);
-                    cartService.updateInventoryStock(inventory);
-                }
-            }
-            session.removeAttribute("lastCheckout");
+        if (session.getAttribute("user") == null) {
+            return "redirect:/";
         }
+        cartService.confirmReturn(session);
         return "redirect:/return";
     }
 }

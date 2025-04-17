@@ -8,7 +8,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class CartItem {
+public class ReturnItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
