@@ -44,8 +44,10 @@ public class CartController {
         if (session.getAttribute("user") == null) {
             return "redirect:/";
         }
-        cartService.checkout(session);
-        return "redirect:/return";
+        // Store cart items in session temporarily for payment page
+        List<CartDisplayItem> cart = cartService.getCartWithDetails(session);
+        session.setAttribute("tempCart", cart);
+        return "redirect:/payment";
     }
 
     @GetMapping("/return")
