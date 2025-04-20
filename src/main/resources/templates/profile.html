@@ -2,34 +2,81 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile</title>
-    <style>
-        nav { background-color: #333; overflow: hidden; }
-        nav a { color: white; padding: 14px 16px; text-decoration: none; display: inline-block; }
-        nav a:hover { background-color: #ddd; color: black; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <nav>
-        <a th:href="@{/dashboard}">Dashboard</a>
-        <a th:href="@{/cart}">Cart</a>
-        <a th:href="@{/return}">Return</a>
-        <a th:href="@{/profile}">Profile</a>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-gray-800 text-white shadow-md">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <a th:href="@{/dashboard}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Dashboard</a>
+                    <a th:href="@{/cart}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Cart</a>
+                    <a th:href="@{/return}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Return</a>
+                    <a th:href="@{/profile}" class="px-3 py-2 rounded-md text-sm font-medium bg-gray-900">Profile</a>
+                </div>
+            </div>
+        </div>
     </nav>
-    <h1>Profile</h1>
-    <div>
-        <p><strong>Email:</strong> <span th:text="${user.email}"></span> (Read-only)</p>
-        <p><strong>Username:</strong> <span th:text="${user.username}"></span></p>
-        <form th:action="@{/profile/update}" method="post">
-            <label for="username">New Username:</label><br>
-            <input type="text" id="username" name="username" th:value="${user.username}"><br>
-            <label for="password">New Password:</label><br>
-            <input type="password" id="password" name="password"><br><br>
-            <button type="submit">Update Profile</button>
-        </form>
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Your Profile</h1>
+            <p class="text-gray-600">Manage your account information</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+                <div class="mb-6">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="bg-gray-200 rounded-full p-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-semibold text-gray-800" th:text="${user.username}"></h2>
+                            <p class="text-gray-600" th:text="${user.email}"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-200 pt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Update Profile Information</h3>
+                    <form th:action="@{/profile/update}" method="post" class="space-y-4">
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-700">New Username</label>
+                            <input type="text" id="username" name="username" th:value="${user.username}" 
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="password" class="block text-sm font-medium text-gray-700">New Password</label>
+                            <input type="password" id="password" name="password" 
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <p class="mt-1 text-xs text-gray-500">Leave blank to keep current password</p>
+                        </div>
+                        
+                        <div>
+                            <button type="submit" 
+                                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="border-t border-gray-200 pt-6 mt-6">
+                    <form th:action="@{/logout}" method="post">
+                        <button type="submit" 
+                            class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    <form th:action="@{/logout}" method="post">
-        <button type="submit">Logout</button>
-    </form>
 </body>
 </html>

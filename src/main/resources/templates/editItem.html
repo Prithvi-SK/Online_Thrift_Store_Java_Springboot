@@ -2,31 +2,79 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Item</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Edit Item</h1>
-    <form th:action="@{/updateItem}" method="post">
-        <input type="hidden" name="id" th:value="${item.id}">
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" th:value="${item.name}" required><br><br>
-        <label for="stock">Stock:</label> <!-- Renamed from Quantity -->
-        <input type="number" id="stock" name="stock" th:value="${item.stock}" required><br><br> <!-- Renamed from quantity -->
-        <label for="rentPrice">Rent Price:</label>
-        <input type="number" step="0.01" id="rentPrice" name="rentPrice" th:value="${item.rentPrice}" required><br><br>
-        <label for="description">Description:</label>
-        <textarea id="description" name="description" th:text="${item.description}"></textarea><br><br>
-        <label for="category">Category:</label>
-        <select id="category" name="category" required>
-            <option value="SHIRTS" th:selected="${item.category == 'SHIRTS'}">Shirts</option>
-            <option value="PANTS" th:selected="${item.category == 'PANTS'}">Pants</option>
-            <option value="FOOTWEAR" th:selected="${item.category == 'FOOTWEAR'}">Footwear</option>
-            <option value="ACCESSORIES" th:selected="${item.category == 'ACCESSORIES'}">Accessories</option>
-            <option value="HOODIES" th:selected="${item.category == 'HOODIES'}">Hoodies</option>
-            <option value="SWEATSHIRTS" th:selected="${item.category == 'SWEATSHIRTS'}">Sweatshirts</option>
-            <option value="COSTUMES" th:selected="${item.category == 'COSTUMES'}">Costumes</option>
-        </select><br><br>
-        <button type="submit">Update</button>
-    </form>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Edit Item</h1>
+            <p class="text-gray-600">Update item details</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+                <form th:action="@{/updateItem}" method="post" class="space-y-6">
+                    <input type="hidden" name="id" th:value="${item.id}">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                            <input type="text" id="name" name="name" th:value="${item.name}" required 
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="stock" class="block text-sm font-medium text-gray-700">Stock</label>
+                            <input type="number" id="stock" name="stock" th:value="${item.stock}" required 
+                                class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        </div>
+                        
+                        <div>
+                            <label for="rentPrice" class="block text-sm font-medium text-gray-700">Rent Price</label>
+                            <div class="mt-1 relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <input type="number" step="0.01" id="rentPrice" name="rentPrice" th:value="${item.rentPrice}" required 
+                                    class="block w-full pl-7 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="category" class="block text-sm font-medium text-gray-700">Category</label>
+                            <select id="category" name="category" required 
+                                class="mt-1 block w-full bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                                <option value="SHIRTS" th:selected="${item.category == 'SHIRTS'}">Shirts</option>
+                                <option value="PANTS" th:selected="${item.category == 'PANTS'}">Pants</option>
+                                <option value="FOOTWEAR" th:selected="${item.category == 'FOOTWEAR'}">Footwear</option>
+                                <option value="ACCESSORIES" th:selected="${item.category == 'ACCESSORIES'}">Accessories</option>
+                                <option value="HOODIES" th:selected="${item.category == 'HOODIES'}">Hoodies</option>
+                                <option value="SWEATSHIRTS" th:selected="${item.category == 'SWEATSHIRTS'}">Sweatshirts</option>
+                                <option value="COSTUMES" th:selected="${item.category == 'COSTUMES'}">Costumes</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                        <textarea id="description" name="description" rows="4" th:text="${item.description}"
+                            class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+                    </div>
+                    
+                    <div class="flex items-center justify-between pt-4">
+                        <a href="/inventory" class="text-gray-600 hover:text-gray-900">
+                            Back to Inventory
+                        </a>
+                        <button type="submit" 
+                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Update Item
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

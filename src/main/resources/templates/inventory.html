@@ -2,39 +2,61 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventory</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Inventory</h1>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Stock</th> <!-- Renamed from Quantity -->
-                <th>Rent Price</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="item : ${inventoryList}">
-                <td th:text="${item.name}"></td>
-                <td th:text="${item.stock}"></td> <!-- Renamed from quantity -->
-                <td th:text="${item.rentPrice}"></td>
-                <td th:text="${item.description}"></td>
-                <td th:text="${item.category}"></td>
-                <td>
-                    <a th:href="@{/editItem(id=${item.id})}">Edit</a>
-                    <a th:href="@{/removeItem(id=${item.id})}" onclick="return confirm('Are you sure you want to remove this item?');">Remove</a>
-                </td>
-            </tr>
-            <tr th:if="${inventoryList.isEmpty()}">
-                <td colspan="6">No items in inventory yet.</td>
-            </tr>
-        </tbody>
-    </table>
-    <br>
-    <a href="/addItem">Add New Item</a>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Inventory Management</h1>
+            <p class="text-gray-600">Manage your rental items inventory</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-700">Inventory Items</h2>
+                    <a href="/addItem" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-200 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Add New Item
+                    </a>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rent Price</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="item : ${inventoryList}" class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" th:text="${item.name}"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${item.stock}"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${item.rentPrice}"></td>
+                                <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" th:text="${item.description}"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${item.category}"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <a th:href="@{/editItem(id=${item.id})}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                    <a th:href="@{/removeItem(id=${item.id})}" onclick="return confirm('Are you sure you want to remove this item?');" class="text-red-600 hover:text-red-900">Remove</a>
+                                </td>
+                            </tr>
+                            <tr th:if="${inventoryList.isEmpty()}">
+                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No items in inventory yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

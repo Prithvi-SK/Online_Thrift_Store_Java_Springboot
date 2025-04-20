@@ -2,56 +2,80 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-    <style>
-        .navbar { overflow: hidden; background-color: #333; }
-        .navbar a { float: left; display: block; color: white; text-align: center; padding: 14px 16px; text-decoration: none; }
-        .navbar a:hover { background-color: #ddd; color: black; }
-        .navbar select { float: left; padding: 14px; margin-right: 16px; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <div class="navbar">
-        <select th:name="category" onchange="window.location.href='/dashboard?category=' + this.value">
-            <option value="" th:selected="${selectedCategory == null}">All Categories</option>
-            <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}" th:selected="${selectedCategory == cat.toString()}"></option>
-        </select>
-        <a href="/cart">Cart</a>
-        <a href="/return">Return</a>
-        <a href="/profile">Profile</a>
-    </div>
+<body class="bg-gray-50 min-h-screen">
+    <nav class="bg-gray-800 text-white shadow-md">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="relative inline-block text-left">
+                        <select th:name="category" onchange="window.location.href='/dashboard?category=' + this.value"
+                            class="bg-gray-700 text-white border-none rounded-md py-2 pl-3 pr-8 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                            <option value="" th:selected="${selectedCategory == null}">All Categories</option>
+                            <option th:each="cat : ${categories}" th:value="${cat}" th:text="${cat}" th:selected="${selectedCategory == cat.toString()}"></option>
+                        </select>
+                    </div>
+                    <a th:href="@{/dashboard}" class="px-3 py-2 rounded-md text-sm font-medium bg-gray-900">Dashboard</a>
+                    <a th:href="@{/cart}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Cart</a>
+                    <a th:href="@{/return}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Return</a>
+                    <a th:href="@{/profile}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-700">Profile</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    <h1>Available Items</h1>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Stock</th>
-                <th>Rent Price</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Add to Cart</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="item : ${inventoryList}">
-                <td th:text="${item.name}"></td>
-                <td th:text="${item.stock}"></td>
-                <td th:text="${item.rentPrice}"></td>
-                <td th:text="${item.description}"></td>
-                <td th:text="${item.category}"></td>
-                <td>
-                    <form th:action="@{/cart/add}" method="post">
-                        <input type="hidden" th:value="${item.id}" name="itemId">
-                        <input type="number" id="cartQuantity_${item.id}" name="quantity" min="1" th:max="${item.stock}" value="1" required>
-                        <button type="submit">Add to Cart</button>
-                    </form>
-                </td>
-            </tr>
-            <tr th:if="${inventoryList.isEmpty()}">
-                <td colspan="6">No items available.</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Available Items</h1>
+            <p class="text-gray-600">Browse our rental inventory</p>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="p-6">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rent Price</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Add to Cart</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <tr th:each="item : ${inventoryList}" class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" th:text="${item.name}"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${item.stock}"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${item.rentPrice}"></td>
+                                <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate" th:text="${item.description}"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${item.category}"></td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <form th:action="@{/cart/add}" method="post" class="flex items-center space-x-2">
+                                        <input type="hidden" th:value="${item.id}" name="itemId">
+                                        <div class="flex rounded-md shadow-sm">
+                                            <input type="number" th:id="'cartQuantity_' + ${item.id}" name="quantity" min="1" th:max="${item.stock}" value="1" required
+                                                class="block w-16 rounded-l-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                            <button type="submit" 
+                                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-r-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                Add to Cart
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${inventoryList.isEmpty()}">
+                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No items available.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
