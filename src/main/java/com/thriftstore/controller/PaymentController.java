@@ -4,13 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-<<<<<<< HEAD
 import org.springframework.ui.Model; // Added import
 import org.springframework.web.bind.annotation.GetMapping; // Added import
-=======
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
->>>>>>> 8d4e59e17e16bae58b4a4fe8a1c26991a5e91a2e
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -67,7 +62,6 @@ public class PaymentController {
             return "redirect:/cart";
         }
 
-<<<<<<< HEAD
         // Perform checkout
         User user = (User) session.getAttribute("user");
         for (CartDisplayItem item : tempCart) {
@@ -96,83 +90,5 @@ public class PaymentController {
         // Clear temporary cart from session
         session.removeAttribute("tempCart");
         return "redirect:/return";
-=======
-        // Use Factory to create payment method
-        PaymentMethod payment = PaymentMethodFactory.createPaymentMethod(paymentMethod);
-        if (payment != null && payment.processPayment()) {
-            User user = (User) session.getAttribute("user");
-            for (CartDisplayItem item : tempCart) {
-                ReturnItem returnItem = new ReturnItem();
-                returnItem.setUser(user);
-                returnItem.setItemId(item.getInventory().getId());
-                returnItem.setQuantity(item.getQuantity());
-                returnItemRepository.save(returnItem);
-
-                Inventory inventory = inventoryRepository.findById(item.getInventory().getId()).orElse(null);
-                if (inventory != null) {
-                    int newStock = inventory.getStock() - item.getQuantity();
-                    if (newStock >= 0) {
-                        inventory.setStock(newStock);
-                        inventoryRepository.save(inventory);
-                    }
-                }
-
-                CartItem cartItem = cartItemRepository.findByUserAndItemId(user, item.getInventory().getId()).orElse(null);
-                if (cartItem != null) {
-                    cartItemRepository.delete(cartItem);
-                }
-            }
-            session.removeAttribute("tempCart");
-            return "redirect:/return";
-        }
-        return "redirect:/payment";
-    }
-}
-
-// Factory and Payment Method Classes
-class PaymentMethodFactory {
-    public static PaymentMethod createPaymentMethod(String type) {
-        switch (type.toLowerCase()) {
-            case "credit_card":
-                return new CreditCardPayment();
-            case "debit_card":
-                return new DebitCardPayment();
-            case "paypal":
-                return new PayPalPayment();
-            default:
-                return null;
-        }
-    }
-}
-
-interface PaymentMethod {
-    boolean processPayment();
-}
-
-class CreditCardPayment implements PaymentMethod {
-    @Override
-    public boolean processPayment() {
-        // Simulate payment processing
-        System.out.println("Processing payment via Credit Card");
-        return true;
-    }
-}
-
-class DebitCardPayment implements PaymentMethod {
-    @Override
-    public boolean processPayment() {
-        // Simulate payment processing
-        System.out.println("Processing payment via Debit Card");
-        return true;
-    }
-}
-
-class PayPalPayment implements PaymentMethod {
-    @Override
-    public boolean processPayment() {
-        // Simulate payment processing
-        System.out.println("Processing payment via PayPal");
-        return true;
->>>>>>> 8d4e59e17e16bae58b4a4fe8a1c26991a5e91a2e
     }
 }
