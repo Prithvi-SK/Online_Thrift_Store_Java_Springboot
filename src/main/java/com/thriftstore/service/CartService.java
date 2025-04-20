@@ -1,24 +1,28 @@
 package com.thriftstore.service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.thriftstore.entity.CartDisplayItem;
 import com.thriftstore.entity.CartItem;
 import com.thriftstore.entity.Inventory;
 import com.thriftstore.entity.ReturnItem;
 import com.thriftstore.entity.User;
-import com.thriftstore.entity.CartDisplayItem;
 import com.thriftstore.repository.CartItemRepository;
 import com.thriftstore.repository.InventoryRepository;
 import com.thriftstore.repository.ReturnItemRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import jakarta.servlet.http.HttpSession;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors; // Added missing import
+import jakarta.servlet.http.HttpSession;
 
 @Service
 public class CartService {
+
+    private static CartService instance;
 
     @Autowired
     private CartItemRepository cartItemRepository;
@@ -26,6 +30,20 @@ public class CartService {
     private ReturnItemRepository returnItemRepository;
     @Autowired
     private InventoryRepository inventoryRepository;
+    private InventoryUpdateStrategy inventoryUpdateStrategy;
+
+    // Private constructor for Singleton
+    private CartService() {
+        this.inventoryUpdateStrategy = new DefaultInventoryUpdateStrategy();
+    }
+
+    // Singleton instance method
+    public static synchronized CartService getInstance() {
+        if (instance == null) {
+            instance = new CartService();
+        }
+        return instance;
+    }
 
     public List<CartDisplayItem> getCartWithDetails(HttpSession session) {
         User user = (User) session.getAttribute("user");
@@ -63,6 +81,7 @@ public class CartService {
             if (newQuantity <= item.getStock()) {
                 cartItem.setQuantity(newQuantity);
                 cartItemRepository.save(cartItem);
+                notifyObservers("Cart updated for user: " + user.getEmail());
             }
         } else {
             CartItem cartItem = new CartItem();
@@ -70,6 +89,7 @@ public class CartService {
             cartItem.setItemId(itemId);
             cartItem.setQuantity(quantity);
             cartItemRepository.save(cartItem);
+            notifyObservers("Item added to cart for user: " + user.getEmail());
         }
     }
 
@@ -79,27 +99,17 @@ public class CartService {
         List<CartItem> cartItems = cartItemRepository.findByUser(user);
         if (cartItems.isEmpty()) return;
 
-        // Move items to return table
         for (CartItem cartItem : cartItems) {
             ReturnItem returnItem = new ReturnItem();
             returnItem.setUser(user);
             returnItem.setItemId(cartItem.getItemId());
             returnItem.setQuantity(cartItem.getQuantity());
             returnItemRepository.save(returnItem);
-
-            // Decrease inventory stock
-            Inventory inventory = inventoryRepository.findById(cartItem.getItemId()).orElse(null);
-            if (inventory != null) {
-                int newStock = inventory.getStock() - cartItem.getQuantity();
-                if (newStock >= 0) {
-                    inventory.setStock(newStock);
-                    inventoryRepository.save(inventory);
-                }
-            }
+            inventoryUpdateStrategy.updateStock(cartItem.getItemId(), -cartItem.getQuantity());
         }
 
-        // Remove items from cart
         cartItemRepository.deleteAll(cartItems);
+        notifyObservers("Checkout completed for user: " + user.getEmail());
     }
 
     public List<CartDisplayItem> getReturnItems(HttpSession session) {
@@ -128,18 +138,57 @@ public class CartService {
         if (returnItems.isEmpty()) return;
 
         for (ReturnItem returnItem : returnItems) {
-            Inventory inventory = inventoryRepository.findById(returnItem.getItemId()).orElse(null);
-            if (inventory != null) {
-                int newStock = inventory.getStock() + returnItem.getQuantity();
-                inventory.setStock(newStock);
-                inventoryRepository.save(inventory);
-            }
+            inventoryUpdateStrategy.updateStock(returnItem.getItemId(), returnItem.getQuantity());
         }
 
         returnItemRepository.deleteAll(returnItems);
+        notifyObservers("Return completed for user: " + user.getEmail());
+    }
+
+    // Observer pattern implementation
+    private List<CartObserver> observers = new ArrayList<>();
+
+    public void addObserver(CartObserver observer) {
+        observers.add(observer);
+    }
+
+    public void removeObserver(CartObserver observer) {
+        observers.remove(observer);
+    }
+
+    private void notifyObservers(String message) {
+        for (CartObserver observer : observers) {
+            observer.update(message);
+        }
+    }
+
+    public void setInventoryUpdateStrategy(InventoryUpdateStrategy strategy) {
+        this.inventoryUpdateStrategy = strategy;
     }
 
     public void updateInventoryStock(Inventory inventory) {
         inventoryRepository.save(inventory);
+    }
+}
+
+// Strategy Interface and Implementation
+interface InventoryUpdateStrategy {
+    void updateStock(Long itemId, int quantityChange);
+}
+
+class DefaultInventoryUpdateStrategy implements InventoryUpdateStrategy {
+    @Autowired
+    private InventoryRepository inventoryRepository;
+
+    @Override
+    public void updateStock(Long itemId, int quantityChange) {
+        Inventory inventory = inventoryRepository.findById(itemId).orElse(null);
+        if (inventory != null) {
+            int newStock = inventory.getStock() + quantityChange;
+            if (newStock >= 0) {
+                inventory.setStock(newStock);
+                inventoryRepository.save(inventory);
+            }
+        }
     }
 }
